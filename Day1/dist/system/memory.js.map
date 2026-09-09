@@ -1,0 +1,1 @@
+{"version":3,"file":"memory.js","sourceRoot":"","sources":["../../src/system/memory.ts"],"names":[],"mappings":";;;;;;AAAA,sDAAwB;AAOxB;IACI,MAAM,KAAK,GAAG,iBAAE,CAAC,QAAQ,EAAE,CAAC;IAC5B,MAAM,IAAI,GAAG,iBAAE,CAAC,OAAO,EAAE,CAAC;IAE1B,OAAO;QACH,KAAK,EAAE,IAAI;KACd,CAAC;AACN,CAAC"}
