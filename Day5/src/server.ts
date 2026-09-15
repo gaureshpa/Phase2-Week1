@@ -1,7 +1,7 @@
 import express from "express";
 import { getTickets, saveTickets } from "./ticketStore.js";
 import { Ticket } from "./types.js";
-import { stat } from "fs";
+import { validateCreateTicket, isValidAssignee, isValidStatus } from "./validation.js";
 
 const app = express();
 
@@ -14,6 +14,15 @@ app.get("/", async (req, res) => {
 });
 
 app.post("/tickets", async(req, res) => {
+    const error = validateCreateTicket(req.body);
+
+    if (error) {
+        res.status(400).json({
+            messagge: error
+        });
+        return;
+    }
+
     const input = req.body; 
     const tickets = await getTickets();
 
@@ -55,6 +64,13 @@ app.get("/tickets/:id", async(req, res) => {
 app.patch("/tickets/:id/status", async(req, res) => {
     const id = Number(req.params.id);
     const { status } = req.body;
+
+    if (!isValidStatus(status)) {
+        res.status(400).json({
+            message: "Status must be open, in-progress or resolved"
+        });
+    }
+    
     const tickets = await getTickets();
     const ticket = tickets.find((ticket) => ticket.id === id);
 
@@ -74,6 +90,14 @@ app.patch("/tickets/:id/status", async(req, res) => {
 app.patch("/tickets/:id/assign", async(req, res) => {
     const id = Number(req.params.id);
     const { assignee } = req.body;
+
+    if (!isValidAssignee(assignee)) {
+        res.status(400).json({
+            message: "Assignee must be a non-empty string or null"
+        });
+        return;
+    }
+
     const tickets = await getTickets();
     const ticket = tickets.find((ticket) => ticket.id === id);
 
@@ -109,7 +133,7 @@ app.delete("/tickets/:id", async(req, res) => {
     res.json({
         message: "Ticker deleted successfully"
     });
-    
+
 });
 
 app.listen(3000, () => {
