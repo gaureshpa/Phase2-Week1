@@ -48,3 +48,8 @@ export function isValidAssignee(assignee:unknown): boolean {
     return assignee === null ||
         (typeof assignee ==="string" && assignee.trim() !== "");
 }
+
+export function isValidId(id: string): boolean {
+    const numberId = Number(id);
+    return Number.isInteger(numberId) && numberId > 0;
+}

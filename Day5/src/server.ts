@@ -1,7 +1,7 @@
 import express from "express";
 import { getTickets, saveTickets } from "./ticketStore.js";
 import { Ticket } from "./types.js";
-import { validateCreateTicket, isValidAssignee, isValidStatus } from "./validation.js";
+import { validateCreateTicket, isValidAssignee, isValidStatus, isValidId } from "./validation.js";
 
 const app = express();
 
@@ -26,8 +26,12 @@ app.post("/tickets", async(req, res) => {
     const input = req.body; 
     const tickets = await getTickets();
 
+    const newId = tickets.length === 0 
+        ? 1 
+        : Math.max(...tickets.map((ticket) => ticket.id)) + 1;
+
     const ticket: Ticket = {
-        id: tickets.length + 1,
+        id: newId,
         title: input.title,
         description: input.description,
         priority: input.priority,
@@ -47,6 +51,14 @@ app.get("/tickets", async(req, res) => {
 });
 
 app.get("/tickets/:id", async(req, res) => {
+
+    if (!isValidId(req.params.id)) {
+        res.status(400).json({
+            message: "Invalid ticket ID"
+        });
+        return;
+    }
+
     const id = Number(req.params.id);
     const tickets = await getTickets();
     const ticket = tickets.find((ticket) => ticket.id === id);
@@ -62,6 +74,14 @@ app.get("/tickets/:id", async(req, res) => {
 });
 
 app.patch("/tickets/:id/status", async(req, res) => {
+
+    if(!isValidId(req.params.id)) {
+        res.status(400).json({
+            message: "Invalid ticket ID"
+        });
+        return;
+    }
+
     const id = Number(req.params.id);
     const { status } = req.body;
 
@@ -70,7 +90,7 @@ app.patch("/tickets/:id/status", async(req, res) => {
             message: "Status must be open, in-progress or resolved"
         });
     }
-    
+
     const tickets = await getTickets();
     const ticket = tickets.find((ticket) => ticket.id === id);
 
@@ -88,6 +108,14 @@ app.patch("/tickets/:id/status", async(req, res) => {
 });
 
 app.patch("/tickets/:id/assign", async(req, res) => {
+
+    if (!isValidId(req.params.id)) {
+        res.status(400).json({
+            message: "Invalid ticket ID"
+        });
+        return;
+    }
+
     const id = Number(req.params.id);
     const { assignee } = req.body;
 
@@ -117,6 +145,14 @@ app.patch("/tickets/:id/assign", async(req, res) => {
 
 
 app.delete("/tickets/:id", async(req, res) => {
+
+    if (!isValidId(req.params.id)) {
+        res.status(400).json({
+            message: "Invalid ticket ID"
+        });
+        return;
+    }
+
     const id = Number(req.params.id);
     const tickets = await getTickets();
     const ticketIndex = tickets.findIndex((ticket) => ticket.id === id);
