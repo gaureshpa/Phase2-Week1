@@ -1,0 +1,117 @@
+import express from "express";
+import { getTickets, saveTickets } from "./ticketStore.js";
+import { Ticket } from "./types.js";
+import { stat } from "fs";
+
+const app = express();
+
+app.use(express.json());
+
+app.get("/", async (req, res) => {
+    const tickets = await getTickets();
+
+    res.json(tickets);
+});
+
+app.post("/tickets", async(req, res) => {
+    const input = req.body; 
+    const tickets = await getTickets();
+
+    const ticket: Ticket = {
+        id: tickets.length + 1,
+        title: input.title,
+        description: input.description,
+        priority: input.priority,
+        status: "open",
+        assignee: null
+    };
+
+    tickets.push(ticket);
+    await saveTickets(tickets);
+
+    res.status(201).json(ticket);
+})
+
+app.get("/tickets", async(req, res) => {
+    const tickets = await getTickets();
+    res.json(tickets);
+});
+
+app.get("/tickets/:id", async(req, res) => {
+    const id = Number(req.params.id);
+    const tickets = await getTickets();
+    const ticket = tickets.find((ticket) => ticket.id === id);
+
+    if(!ticket) {
+        res.status(404).json({
+            message: "Ticket not found"
+        });
+        return;
+    }
+
+    res.json(ticket);
+});
+
+app.patch("/tickets/:id/status", async(req, res) => {
+    const id = Number(req.params.id);
+    const { status } = req.body;
+    const tickets = await getTickets();
+    const ticket = tickets.find((ticket) => ticket.id === id);
+
+    if (!ticket) {
+        res.status(404).json({
+            message: "Ticket not found"
+        });
+        return;
+    }
+
+    ticket.status = status;
+    await saveTickets(tickets);
+
+    res.json(ticket);
+});
+
+app.patch("/tickets/:id/assign", async(req, res) => {
+    const id = Number(req.params.id);
+    const { assignee } = req.body;
+    const tickets = await getTickets();
+    const ticket = tickets.find((ticket) => ticket.id === id);
+
+    if (!ticket) {
+        res.status(404).json({
+            message: "Ticket not found"
+        });
+        return;
+    }
+
+    ticket.assignee = assignee;
+    await saveTickets(tickets);
+
+    res.json(ticket);
+
+});
+
+
+app.delete("/tickets/:id", async(req, res) => {
+    const id = Number(req.params.id);
+    const tickets = await getTickets();
+    const ticketIndex = tickets.findIndex((ticket) => ticket.id === id);
+
+    if (ticketIndex === -1) {
+        res.status(404).json({
+            message: "Ticket not found"
+        });
+        return;
+    }
+
+    tickets.splice(ticketIndex, 1);
+    await saveTickets(tickets);
+    res.json({
+        message: "Ticker deleted successfully"
+    });
+    
+});
+
+app.listen(3000, () => {
+    console.log("Server running on http://localhost:3000");
+});

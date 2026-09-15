@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Login problem",
+    "description": "Cannot log into account",
+    "priority": "high",
+    "assignee": "Kyle",
+    "status": "open"
+  }
+]
