@@ -167,7 +167,7 @@ router.delete("/:id", async(req, res) => {
     tickets.splice(ticketIndex, 1);
     await saveTickets(tickets);
     res.json({
-        message: "Ticker deleted successfully"
+        message: "Ticket deleted successfully"
     });
 
 });
